@@ -49,6 +49,6 @@
 #endif
 
 #define MNKB_16_1152_5120_8 0
-#define MNKB_16_5120_384_3 1
+#define MNKB_16_5120_384_3 0
 #define MNKB_16_1280_5120_8 1
 #define MNKB_16_5120_1280_5 1

@@ -71,6 +71,7 @@ struct DeviceGemmXdlSplitKCShuffleStatic
     static constexpr auto I3 = Number<3>{};
 
     static constexpr auto I4 = Number<4>{};
+    static constexpr auto I5 = Number<5>{};
     static constexpr auto I8 = Number<8>{};
 
     static constexpr auto I20 = Number<8>{};
@@ -81,14 +82,35 @@ struct DeviceGemmXdlSplitKCShuffleStatic
     static constexpr auto I1280 = Number<1280>{};
     static constexpr auto I5120 = Number<5120>{};
 
+    static constexpr auto IM = I16;
+
+#if MNKB_16_1152_5120_8
+    static constexpr auto IN = I1152;
+    static constexpr auto IK = I5120;
+    static constexpr auto IKBatch = I8;
+#elif MNKB_16_5120_384_3
+    static constexpr auto IN = I5120;
+    static constexpr auto IK = I384;
+    static constexpr auto IKBatch = I3;
+#elif MNKB_16_1280_5120_8
+    static constexpr auto IN = I1280;
+    static constexpr auto IK = I5120;
+    static constexpr auto IKBatch = I8;
+#elif MNKB_16_5120_1280_5
+    static constexpr auto IN = I5120;
+    static constexpr auto IK = I1280;
+    static constexpr auto IKBatch = I5;
+#endif
+    
+
     static auto
     MakeAGridDescriptor_KBatch_K0_M_K1()
     {
-        static constexpr auto KPad = I5120;
-        static constexpr auto K = I5120;
-        static constexpr auto KBatch = I20;
-        static constexpr auto M = I16;
-        static constexpr auto StrideA = I5120;
+        static constexpr auto KPad = IK;
+        static constexpr auto K = IK;
+        static constexpr auto KBatch = IKBatch;
+        static constexpr auto M = IM;
+        static constexpr auto StrideA = IK;
 
         assert(KPad % (AK1 * KBatch) == 0);
 
@@ -144,11 +166,11 @@ struct DeviceGemmXdlSplitKCShuffleStatic
     static auto
     MakeBGridDescriptor_KBatch_K0_N_K1()
     {
-        static constexpr auto KPad = I5120;
-        static constexpr auto K = I5120;
-        static constexpr auto KBatch = I20;
-        static constexpr auto N = I1152;
-        static constexpr auto StrideB = I1152;
+        static constexpr auto KPad = IK;
+        static constexpr auto K = IK;
+        static constexpr auto KBatch = IKBatch;
+        static constexpr auto N = IN;
+        static constexpr auto StrideB = IN;
 
         assert(KPad % (BK1 * KBatch) == 0);
 
@@ -203,9 +225,9 @@ struct DeviceGemmXdlSplitKCShuffleStatic
 
     static auto MakeCGridDescriptor_M_N()
     {
-        static constexpr auto M = I16;
-        static constexpr auto N = I1152;
-        static constexpr auto StrideC = I1152;
+        static constexpr auto M = IM;
+        static constexpr auto N = IN;
+        static constexpr auto StrideC = IN;
 
         const auto c_grid_desc_m_n = [&]() {
             if constexpr(is_same<tensor_layout::gemm::RowMajor, CLayout>::value)
@@ -384,7 +406,7 @@ struct DeviceGemmXdlSplitKCShuffleStatic
             c_grid_desc_m_n_ = DeviceGemmXdlSplitKCShuffleStatic::MakeCGridDescriptor_M_N();
 
             block_2_ctile_map_ =
-                GridwiseGemm::MakeCBlockClusterAdaptor(c_grid_desc_m_n_, M01, N01, I20);
+                GridwiseGemm::MakeCBlockClusterAdaptor(c_grid_desc_m_n_, M01, N01, IKBatch);
 
             if(GridwiseGemm::CheckValidity(a_grid_desc_kbatch_k0_m_k1_,
                                            b_grid_desc_kbatch_k0_n_k1_,

@@ -124,15 +124,24 @@ struct GridwiseGemm_bk0mk1_bk0nk1_mn_xdlops_v2r4r2
     static constexpr auto I6 = Number<6>{};
     static constexpr auto I7 = Number<7>{};
 
-    static constexpr auto I8 = Number<8>{};
-
-    static constexpr auto I20 = Number<20>{};
-
     static constexpr auto I16 = Number<16>{};
-    static constexpr auto I384 = Number<384>{};
     static constexpr auto I1152 = Number<1152>{};
     static constexpr auto I1280 = Number<1280>{};
     static constexpr auto I5120 = Number<5120>{};
+
+    static constexpr auto IM = I16;
+
+#if MNKB_16_1152_5120_8
+    static constexpr auto IN = I1152;
+#elif MNKB_16_5120_384_3
+    static constexpr auto IN = I5120;
+#elif MNKB_16_1280_5120_8
+    static constexpr auto IN = I1280;
+#elif MNKB_16_5120_1280_5
+    static constexpr auto IN = I5120;
+#endif
+
+    
 
     // K1 should be Number<...>
     static constexpr auto AK0 = Number<KPerBlock / AK1Value>{};
@@ -270,8 +279,8 @@ struct GridwiseGemm_bk0mk1_bk0nk1_mn_xdlops_v2r4r2
     __host__ __device__ static constexpr auto
     MakeCGridDesc_MBlock_MPerBlock_NBlock_NPerBlock_Static(const CMNGridDesc& )
     {
-        const auto M = I16;
-        const auto N = I1152;
+        const auto M = IM;
+        const auto N = IN;
 
         const auto MBlock = Number<M / MPerBlock>{};
         const auto NBlock = Number<N / NPerBlock>{};

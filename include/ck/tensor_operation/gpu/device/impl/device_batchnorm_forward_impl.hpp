@@ -42,15 +42,8 @@ template <typename XDataType,
           index_t ScaleSrcVectorSize,
           index_t BiasSrcVectorSize,
           index_t MeanVarSrcDstVectorSize>
-struct DeviceBatchNormFwdImpl : public DeviceBatchNormFwd<XDataType,
-                                                          YDataType,
-                                                          AccDataType,
-                                                          ScaleDataType,
-                                                          BiasDataType,
-                                                          MeanVarDataType,
-                                                          YElementwiseOp,
-                                                          Rank,
-                                                          NumBatchNormReduceDim>
+struct DeviceBatchNormFwdImpl
+    : public DeviceBatchNormFwd<Rank, NumBatchNormReduceDim, YElementwiseOp>
 {
     static_assert(Rank <= 6, "Bigger Rank size is not supported!");
     static_assert(BlockSize == MThreadClusterSize * KThreadClusterSize,

@@ -9,8 +9,8 @@ int run(int argc, char* argv[])
 
     // GEMM shape for A/B0/B1/C
     // C_g_m_o = A_g_m_k * B0_g_k_n * B1_g_n_o
-    ck::index_t M = 1024; //120
-    ck::index_t N = 1024; //1000
+    ck::index_t M = 1024; // 120
+    ck::index_t N = 1024; // 1000
     ck::index_t K = 64;
     ck::index_t O = 128;
 
@@ -89,20 +89,21 @@ int run(int argc, char* argv[])
             : std::vector<ck::index_t>{G1 * M * O, M * O, O, 1}; // C layout [G0, G1, M, O]
 
     std::vector<ck::index_t> lse_gs_ms_lengths{G0, G1, M};
-    std::vector<ck::index_t> lse_gs_ms_strides = std::vector<ck::index_t>{G1 * M, M, 1}; // LSE layout [G0, G1, M]
+    std::vector<ck::index_t> lse_gs_ms_strides =
+        std::vector<ck::index_t>{G1 * M, M, 1}; // LSE layout [G0, G1, M]
 
-    Tensor<ADataType>   a_gs_ms_ks(a_gs_ms_ks_lengths, a_gs_ms_ks_strides);
-    Tensor<B0DataType>  b0_gs_ns_ks(b0_gs_ns_ks_lengths, b0_gs_ns_ks_strides);
-    Tensor<B1DataType>  b1_gs_os_ns(b1_gs_os_ns_lengths, b1_gs_os_ns_strides);
-    Tensor<CDataType>   c_gs_ms_os_host_result(c_gs_ms_os_lengths, c_gs_ms_os_strides);
-    Tensor<CDataType>   c_gs_ms_os_device_result(c_gs_ms_os_lengths, c_gs_ms_os_strides);
+    Tensor<ADataType> a_gs_ms_ks(a_gs_ms_ks_lengths, a_gs_ms_ks_strides);
+    Tensor<B0DataType> b0_gs_ns_ks(b0_gs_ns_ks_lengths, b0_gs_ns_ks_strides);
+    Tensor<B1DataType> b1_gs_os_ns(b1_gs_os_ns_lengths, b1_gs_os_ns_strides);
+    Tensor<CDataType> c_gs_ms_os_host_result(c_gs_ms_os_lengths, c_gs_ms_os_strides);
+    Tensor<CDataType> c_gs_ms_os_device_result(c_gs_ms_os_lengths, c_gs_ms_os_strides);
     Tensor<LSEDataType> lse_gs_ms_host_result(lse_gs_ms_lengths, lse_gs_ms_strides);
     Tensor<LSEDataType> lse_gs_ms_device_result(lse_gs_ms_lengths, lse_gs_ms_strides);
 
-    std::cout << "a_gs_ms_ks: "   << a_gs_ms_ks.mDesc << std::endl;
-    std::cout << "b0_gs_ns_ks: "  << b0_gs_ns_ks.mDesc << std::endl;
-    std::cout << "b1_gs_os_ns: "  << b1_gs_os_ns.mDesc << std::endl;
-    std::cout << "c_gs_ms_os: "   << c_gs_ms_os_host_result.mDesc << std::endl;
+    std::cout << "a_gs_ms_ks: " << a_gs_ms_ks.mDesc << std::endl;
+    std::cout << "b0_gs_ns_ks: " << b0_gs_ns_ks.mDesc << std::endl;
+    std::cout << "b1_gs_os_ns: " << b1_gs_os_ns.mDesc << std::endl;
+    std::cout << "c_gs_ms_os: " << c_gs_ms_os_host_result.mDesc << std::endl;
     std::cout << "lse_gs_ms_os: " << lse_gs_ms_host_result.mDesc << std::endl;
 
     switch(init_method)
@@ -135,7 +136,7 @@ int run(int argc, char* argv[])
     DeviceMem c_device_buf(sizeof(CDataType) *
                            c_gs_ms_os_device_result.mDesc.GetElementSpaceSize());
     DeviceMem lse_device_buf(sizeof(LSEDataType) *
-                           lse_gs_ms_device_result.mDesc.GetElementSpaceSize());
+                             lse_gs_ms_device_result.mDesc.GetElementSpaceSize());
 
     a_device_buf.ToDevice(a_gs_ms_ks.mData.data());
     b0_device_buf.ToDevice(b0_gs_ns_ks.mData.data());
@@ -209,9 +210,10 @@ int run(int argc, char* argv[])
         Tensor<ADataType> a_g_m_k({BatchCount, M, K});
         Tensor<B0DataType> b0_g_k_n({BatchCount, K, N});
         Tensor<B1DataType> b1_g_n_o({BatchCount, N, O});
-        Tensor<AccDataType> acc0_g_m_n({BatchCount, M, N});        // scratch object after gemm0
-        Tensor<ADataType> a1_g_m_n({BatchCount, M, N});            // scratch object after softmax
-        Tensor<LSEDataType> lse_g_m_host_result({BatchCount, M});  // scratch object after max + ln(sum)
+        Tensor<AccDataType> acc0_g_m_n({BatchCount, M, N}); // scratch object after gemm0
+        Tensor<ADataType> a1_g_m_n({BatchCount, M, N});     // scratch object after softmax
+        Tensor<LSEDataType> lse_g_m_host_result(
+            {BatchCount, M}); // scratch object after max + ln(sum)
         Tensor<CDataType> c_g_m_o_host_result({BatchCount, M, O}); // scratch object after gemm1
 
         // permute
@@ -241,9 +243,10 @@ int run(int argc, char* argv[])
         });
 
         // softmax
-        auto ref_softmax          = ReferenceSoftmaxInstance{};
-        auto ref_softmax_invoker  = ref_softmax.MakeInvoker();
-        auto ref_softmax_argument = ref_softmax.MakeArgument(acc0_g_m_n, a1_g_m_n, 1, 0, {2}, &lse_g_m_host_result);
+        auto ref_softmax         = ReferenceSoftmaxInstance{};
+        auto ref_softmax_invoker = ref_softmax.MakeInvoker();
+        auto ref_softmax_argument =
+            ref_softmax.MakeArgument(acc0_g_m_n, a1_g_m_n, 1, 0, {2}, &lse_g_m_host_result);
 
         ref_softmax_invoker.Run(ref_softmax_argument);
 
@@ -289,12 +292,12 @@ int run(int argc, char* argv[])
                                     c_gs_ms_os_host_result.mData,
                                     "Error: Incorrect results c!",
                                     rtol,
-                                    atol) && 
-               ck::utils::check_err(lse_gs_ms_device_result.mData,
-                                    lse_gs_ms_host_result.mData,
-                                    "Error: Incorrect results lse!",
-                                    rtol,
-                                    atol)
+                                    atol) &&
+                       ck::utils::check_err(lse_gs_ms_device_result.mData,
+                                            lse_gs_ms_host_result.mData,
+                                            "Error: Incorrect results lse!",
+                                            rtol,
+                                            atol)
                    ? 0
                    : 1;
     }

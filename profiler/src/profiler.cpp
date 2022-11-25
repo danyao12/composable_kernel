@@ -24,7 +24,6 @@ int profile_softmax(int, char*[]);
 int profile_layernorm(int, char*[]);
 int profile_groupnorm(int, char*[]);
 int profile_reduce(int, char*[]);
-int profile_batchnorm_forward(int, char*[]);
 
 static void print_helper_message()
 {
@@ -47,8 +46,7 @@ static void print_helper_message()
            "                        grouped_conv_fwd: Grouped Convolution Forward\n"
            "                        grouped_conv_bwd_weight: Grouped Convolution Backward Weight\n"
            "                        softmax: Softmax\n"
-           "                        reduce: Reduce\n"
-	   "                        bnorm_fwd: Batchnorm forward\n");
+           "                        reduce: Reduce\n");
     // clang-format on
 }
 
@@ -143,10 +141,6 @@ int main(int argc, char* argv[])
     else if(strcmp(argv[1], "groupnorm") == 0)
     {
         return profile_groupnorm(argc, argv);
-    }
-    else if(strcmp(argv[1], "bnorm_fwd") == 0)
-    {
-        return profile_batchnorm_forward(argc, argv);
     }
     else
     {

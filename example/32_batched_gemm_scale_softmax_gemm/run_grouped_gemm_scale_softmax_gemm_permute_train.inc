@@ -115,6 +115,7 @@ int run(int argc, char* argv[])
                                  c_gs_ms_os_lengths,
                                  c_gs_ms_os_strides,
                                  lse_gs_ms_lengths,
+                                 lse_gs_ms_strides,
                                  {},   // acc0_biases_gs_ms_ns_lengths
                                  {},   // acc0_biases_gs_ms_ns_strides
                                  {},   // acc1_biases_gs_ms_os_lengths
